@@ -71,36 +71,27 @@ export default {
       this.$message('表单信息已重置');
     },
     // 点击登录按钮，进行登录
-    async login() {
-      const { username, password } = this.loginForm
-      if(!username || !password) {
-        this.$message('用户名和密码不得为空！');
-        return
-      } else if(username.length < 2 || username.length > 12 || password.length < 6 || password.length > 40) {
-        this.$message({
-          message: '用户名或密码错误',
-          type: 'error',
-          center: true
-        })
-      }
-      const { data, status } = await login(username, password)
-      console.log(data);
-      if(status === 200) {
-        this.$message({
-          message: '登录成功',
-          type: 'success',
-          center: true
-        })
-        // 保存token
-        window.sessionStorage.setItem('token', data.token)
-        this.$router.push('/home')
-      } else {
-        this.$message({
-          message: '登录失败',
-          type: 'error',
-          center: true
-        })
-      }
+    login() {
+      this.$refs.loginFormRef.validate(async (valid) => {
+        if(!valid) return
+        const { data, status } = await login(this.loginForm)
+        if(status === 200) {
+          this.$message({
+            message: '登录成功',
+            type: 'success',
+            center: true
+          })
+          // 保存token
+          window.sessionStorage.setItem('token', data.token)
+          this.$router.push('/home')
+        } else {
+          this.$message({
+            message: '登录失败',
+            type: 'error',
+            center: true
+          })
+        }
+      })
     }
   }
 };

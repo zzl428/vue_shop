@@ -35,6 +35,19 @@
                     placeholder="请再次输入密码"></el-input>
         </el-form-item>
         
+        <!-- 邮箱 -->
+        <el-form-item  prop="email" label="邮箱">
+          <el-input v-model="registerForm.email" 
+                    prefix-icon="el-icon-s-promotion"
+                    placeholder="请输入邮箱"></el-input>
+        </el-form-item>
+        <!-- 电话 -->
+        <el-form-item prop="mobile" label="电话">
+          <el-input v-model="registerForm.mobile" 
+                    prefix-icon="el-icon-phone"
+                    placeholder="请输入电话"></el-input>
+        </el-form-item>
+
         <!-- 注册、登录和重置按钮 -->
         <div class="bottom_box">
           <el-link type="info" class="login" @click="login">已有账号，立即登录！</el-link>
@@ -50,21 +63,16 @@
 
 <script>
 import { register, checkName } from 'network/login_register'
+import { 
+  validName, verifyNameNotNull, verifyNameSize, 
+  verifyPwdNotNull, verifyPwdSize,
+  verifyEmailNotNull, validEmail,
+  verifyMobileNotNull, verifyMobileSize, validMobile
+} from 'common/utils'
 
 export default {
   name: 'Register',
-  data() { 
-    // 验证用户名的规则函数
-    const validName = async (rule, value, callback) => {
-      this.registerForm.nameExists = false
-      const result = await checkName(value);
-      if(result.status === 409) {
-        this.registerForm.nameExists = true
-        callback(new Error('用户已存在'))
-      } else {
-        callback()
-      }
-    };
+  data() {
     // 验证确认密码的规则函数
     const validPwd = (rule, value, callback) => {
       if(value !== this.registerForm.password) {
@@ -75,30 +83,34 @@ export default {
     };
 
     return {
+      nameExists:false,
       // 登陆表单数据绑定对象
       registerForm: {
         username: "",
         password: "",
         checkPassword:"",
-        nameExists:false
+        email: '',
+        mobile: '',
       },
       // 表单验证规则对象
       registerFormRules: {
         // 验证用户名是否合法
         username: [
-          { required: true, message: "请输入用户名称", trigger: "blur" },
-          { min: 2, max: 12, message: "长度在 2 到 12 个字符", trigger: "blur"},
+          verifyNameNotNull,
+          verifyNameSize,
           { validator: validName, trigger: 'blur' }
         ],
         // 验证密码是否合法
         password: [
-          { required: true, message: "请输入密码", trigger: "blur" },
-          { min: 6, max: 40, message: "密码长度不能小于 6 个字符", trigger: "blur" },
+          verifyPwdNotNull,
+          verifyPwdSize,
         ],
         checkPassword: [
-          { required: true, message: "请输入密码", trigger: "blur" },
+          verifyPwdNotNull,
           { validator: validPwd, trigger: 'blur' }
-        ]
+        ],
+        email: [ verifyEmailNotNull, { validator: validEmail, trigger: 'blur' } ],
+        mobile: [ verifyMobileNotNull, verifyMobileSize, { validator: validMobile, trigger: 'blur' } ]
       },
     }
   },
@@ -112,28 +124,19 @@ export default {
       this.$refs.registerFormRef.resetFields()
       this.$message('表单信息已重置');
     },
-    async register() {
-      const { username, password, checkPassword, nameExists } = this.registerForm
-      if(nameExists) {
-        console.log(`用户名已存在`);
-        return 
-      } else if(!username || !password || !checkPassword) {
-        console.log(`不能为空`);
-        return
-      } else if(password !== checkPassword) {
-        console.log(`密码不一致`);
-        return 
-      }
-      const result = await register(username, password)
-      if(result.status === 200) {
-        this.$message({
-          message: '恭喜你注册成功',
-          type: 'success',
-          center: true
-        })
-        this.$refs.registerFormRef.resetFields()
-      }
-      // console.log(result);
+    register() {
+      this.$refs.registerFormRef.validate(async (valid) => {
+        if(!valid) return
+        const result = await register(this.registerForm)
+        if(result.status === 200) {
+          this.$message({
+            message: '恭喜你注册成功',
+            type: 'success',
+            center: true
+          })
+          this.$refs.registerFormRef.resetFields()
+        }
+      })
     }
   },
  }
@@ -149,7 +152,7 @@ export default {
 
 .register_box {
   width: 450px;
-  height: 410px;
+  height: 440px;
   background-color: #fff;
   border-radius: 3px;
   margin: auto;
@@ -179,7 +182,7 @@ export default {
 
 .register_form {
   position: relative;
-  bottom: 20px;
+  bottom: 70px;
   padding: 0 20px;
 }
 

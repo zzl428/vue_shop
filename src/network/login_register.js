@@ -1,6 +1,6 @@
 import { request } from './request'
 
-export function login(username, password) {
+export function login(form) {
   return request({
     method: 'POST',
     url: '/users/login',
@@ -8,13 +8,12 @@ export function login(username, password) {
       "Content-Type": 'application/json'
     },
     data: {
-      username,
-      password
+      form
     }
   })
 }
 
-export function register(username, password) {
+export function register(form) {
   return request({
     method: 'post',
     url: '/users/register',
@@ -22,19 +21,21 @@ export function register(username, password) {
       "Content-Type": 'application/json'
     },
     data: {
-      username,
-      password
+      form
     }
   })
 }
 
-export function checkName(userName) {
+// 按字段查找
+export function searchByField(table, field, value) {
   return request({
-    method: 'post',
-    url: '/users/register/'+userName,
-    // params: {
-    //   userName
-    // }
+    method: 'get',
+    url: '/data/search',
+    params: {
+      table,
+      field,
+      value
+    }
   })
 }
 

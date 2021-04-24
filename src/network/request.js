@@ -3,7 +3,7 @@ import axios from 'axios'
 export function request(config) {
   // 1创建实例
   const instance = axios.create({
-    baseURL:'http://localhost:8006',
+    baseURL: 'http://localhost:8006',
     headers: {
       "Content-Type": config.headers || "application/x-www-form-urlencoded;charset=UTF-8"
     },
@@ -13,6 +13,9 @@ export function request(config) {
 
   // 2axios的拦截器
   instance.interceptors.request.use(config=>{
+    const token = window.sessionStorage.getItem('token')
+    // console.log(token);
+    config.headers.Authorization = 'Bearer ' + token
     // console.log(config);
     // 放行
     return config
@@ -21,7 +24,10 @@ export function request(config) {
   })
 
   instance.interceptors.response.use(res=>{
-    return res
+    return {
+      data: res.data,
+      status: res.status
+    }
   },err=>{
     return {
       status:err.response.status,
