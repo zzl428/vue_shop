@@ -50,7 +50,7 @@
                       @click="deleteUser(scope.row.id)"></el-button>
             <!-- 分配角色 -->
             <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-              <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+              <el-button type="warning" icon="el-icon-setting" size="mini" @click="allotRole(scope.row)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -88,7 +88,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="addUser">确 定</el-button>
-        <el-button @click="resetAddForm('message')">重置</el-button>
+        <el-button @click="resetAddForm('message')">重 置</el-button>
       </span>
     </el-dialog>
     <!-- 修改用户的对话框 -->
@@ -114,13 +114,40 @@
         <el-button @click="resetEditForm('message')">重置</el-button>
       </span>
     </el-dialog>
+    <!-- 分配角色的对话框 -->
+    <el-dialog
+      title="分配角色"
+      :visible.sync="setRoleDialogVisible"
+      width="50%"
+      @close="selectRoleId = ''">
+      <div>
+        <p>当前用户： {{userInfo.name}}</p>
+        <p>当前角色： {{userInfo.role}}</p>
+        <p>
+          分配新角色： 
+          <el-select v-model="selectRoleId" placeholder="请选择">
+            <el-option
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import {getUserList, alterUser, searchUserByName, searchUserById } from 'network/home'
-import { register } from 'network/login_register'
+import { register, setRole } from 'network/login_register'
 import { deleteByField } from 'network/home.js'
+import { getRolesList } from 'network/roles'
 import { 
   validName, verifyNameNotNull, verifyNameSize, 
   verifyPwdNotNull, verifyPwdSize, 
@@ -168,6 +195,8 @@ export default {
       dialogVisible: false,
       // 控制修改对话框的显示
       editDialogVisible:false,
+      // 分配角色对话框的显示
+      setRoleDialogVisible: false,
       // 添加用户对象
       addForm: {
         username: '',
@@ -181,6 +210,8 @@ export default {
         email: '',
         mobile: ''
       },
+      // 设置权限时显示的用户信息
+      userInfo: {},
       // 对比编辑用户对象
       checkEditForm: {
         email: '',
@@ -198,7 +229,11 @@ export default {
       editFormRules: {
         email: [ verifyEmailNotNull, { validator: validEditEmail, trigger: 'blur' } ],
         mobile: [ verifyMobileNotNull, verifyMobileSize, { validator: validEditMobile, trigger: 'blur' } ]
-      }
+      },
+      // 用户列表
+      roleList: [],
+      // 选择要分配的角色
+      selectRoleId: '',
     }
   },
   created () {
@@ -326,6 +361,26 @@ export default {
           return this.$message.error('删除用户失败')
         }
       }
+    },
+    // 分配角色
+    async allotRole(role) {
+      this.userInfo = role
+      // 获取角色列表
+      const {data, status} = await getRolesList()
+      if(status !== 200) return this.$message.error('获取角色列表数据失败')
+      this.roleList = data
+
+      this.setRoleDialogVisible = true
+    },
+    // 确认按钮完成角色分配
+    async saveRoleInfo() {
+      if(!this.selectRoleId) return this.$message.error('请选择要分配的角色')
+      const {data, status} = await setRole(this.userInfo.id, this.selectRoleId)
+      if(status !== 200) return this.$message.error('分配角色失败')
+      this.setRoleDialogVisible = false
+      this.$message.success('分配角色成功')
+      this.getUserList()
+      
     }
   }
  }
@@ -333,6 +388,6 @@ export default {
 
 <style lang="less" scoped>
  .el-table {
-   font-size: 12px;
+   
  }
 </style>

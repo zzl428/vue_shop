@@ -26,6 +26,19 @@ export function register(form) {
   })
 }
 
+export function setRole(userId, roleId) {
+  return request({
+    method: 'put',
+    url: `/users/${userId}/role`,
+    headers: {
+      "Content-Type": 'application/json'
+    },
+    data: {
+      roleId
+    }
+  })
+}
+
 // 按字段查找
 export function searchByField(table, field, value) {
   return request({
