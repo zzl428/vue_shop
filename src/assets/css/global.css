@@ -22,3 +22,8 @@ html, body, #app {
 .el-pagination {
   margin-top: 15px;
 }
+
+/* .el-table [class*=el-table__row--level] .el-table__expand-icon {
+  position: relative;
+  left: 55px;
+} */
