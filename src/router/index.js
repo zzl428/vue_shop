@@ -12,6 +12,8 @@ const Roles = () => import('views/auth/Roles.vue')
 const Rights = () => import('views/auth/Rights.vue')
 const Cate = () => import('views/goods/Cate.vue')
 const Params = () => import('views/goods/Params.vue')
+const List = () => import('views/goods/List.vue')
+const Add = () => import('views/goods/Add.vue')
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -28,6 +30,8 @@ const routes = [
       { path: '/rights', component: Rights },
       { path: '/categories', component: Cate },
       { path: '/params', component: Params },
+      { path: '/goods', component: List },
+      { path: '/goods/add', component: Add },
     ]
   },
 ]
